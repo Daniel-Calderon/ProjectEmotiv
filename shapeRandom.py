@@ -5,6 +5,7 @@ def randoColor(shape):
     randomNumber2 = random.randrange(0,256)
     randomNumber3 = random.randrange(0,256)
     shape.color= (randomNumber1,randomNumber2,randomNumber3)
+    return shape
 def randomShape(shape):
     randomNumber = random.randrange(1,9)
     
@@ -16,8 +17,8 @@ def randomShape(shape):
         shape = cylinder(pos=(0,0,0),color =(0,244,0), axis=(0,1,1), radius=1)
     elif randomNumber == 4:
         shape = ellipsoid(pos=(0,0,0),color =(0,244,0),length=1, height=1, width=1)
-    #elif randomNumber == 5:
-        #shape = helix(pos=(0,0,0), axis=(0,1,1),color =(255,0,0), radius=0.5)
+    elif randomNumber == 5:
+        shape = helix(pos=(0,0,0), axis=(0,1,1),color =(255,0,0), radius=0.5)
     elif randomNumber == 6:
         shape = pyramid(pos=(0,0,0),axis =(0,.2,.2),color =(0,244,0), size=(2,2,2))
     elif randomNumber == 7:
@@ -26,9 +27,10 @@ def randomShape(shape):
         shape = sphere(pos=(0,0,0),color =(0,244,0), radius=0.5)
     print randomNumber
     return shape
-    #randomColor(shape)
     rate(5)
 shape = box(pos = (0,0,0),axis = (0,0,1),color = (0,244,0),length =1,width =1, height =1)
-for i in range (0,10):
-   shape=randomShape(shape)
-
+while True:
+    shape.visible = false
+    shape=randomShape(shape)
+    shape = randoColor(shape)
+    rate(5)
