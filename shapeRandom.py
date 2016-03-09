@@ -1,6 +1,6 @@
 from visual import *
 import random
-def randoColor(shape):
+def randomColor(shape):
     randomNumber1 = random.randrange(0,2)
     randomNumber2 = random.randrange(0,2)
     randomNumber3 = random.randrange(0,2)
@@ -34,5 +34,5 @@ shape = box(pos = (0,0,0),axis = (0,0,1),color = (0,244,0),length =1,width =1, h
 while True:
     shape.visible = false
     shape=randomShape(shape)
-    shape = randoColor(shape)
+    shape = randomColor(shape)
     rate(5)
