@@ -31,7 +31,7 @@ def playMusic():
     #if a song is meant to start over
     if(playorpause == 0):
 	#create a list of songs from in the local files of the project
-        songs  = ['warp.mp3', 'Rapgod.mp3', 'ILoveItWhenYouCry.mp3']
+        songs  = ['warp.mp3', 'Rapgod.mp3', 'ILoveItWhenYouCry.mp3', 'BulletproofLove.mp3', 'Nobeef.mp3', 'sail.mp3', 'Nightmare.mp3', 'PursuitOfHapiness.mp3']
 	#select a song in the list of songs
         rand = random.randint(0, len(songs) - 1)
         songatnum = songs[rand]
