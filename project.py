@@ -1,4 +1,7 @@
 # python version >= 2.5
+#this code is based off of an emotiv example given on the emotiv site we modify to
+#the extract the data from the headset to give a visualization of a random channel using Vpython
+#Authors: Brandan Lockwood,Brock D` Amico,Daniel,Daniel CalderonManriquez
 import sys,os
 import time
 import ctypes
@@ -16,7 +19,8 @@ from ctypes import c_char_p
 from ctypes import c_float
 from ctypes import c_double
 from ctypes import byref
-arr=[]
+
+#try to make sure libraries can load into python
 try :
     if sys.platform.startswith('win32'):     
         libEDK = cdll.LoadLibrary("edk.dll")
@@ -26,7 +30,9 @@ try :
         libEDK = CDLL(libPath)
 except :
     print 'Error : cannot load dll lib' 
-
+#setup variables for emotiv epoc+ from example
+arr=[]
+    
 ED_COUNTER = 0
 ED_INTERPOLATED=1
 ED_RAW_CQ=2
@@ -54,8 +60,6 @@ ED_MARKER=23
 ED_SYNC_SIGNAL=24
 
 targetChannelList = [ED_COUNTER,ED_AF3, ED_F7, ED_F3, ED_FC5, ED_T7,ED_P7, ED_O1, ED_O2, ED_P8, ED_T8,ED_FC6, ED_F4, ED_F8, ED_AF4, ED_GYROX, ED_GYROY, ED_TIMESTAMP, ED_FUNC_ID, ED_FUNC_VALUE, ED_MARKER, ED_SYNC_SIGNAL]
-header = ['COUNTER','AF3','F7','F3', 'FC5', 'T7', 'P7', 'O1', 'O2','P8', 'T8', 'FC6', 'F4','F8', 'AF4','GYROX', 'GYROY', 'TIMESTAMP','FUNC_ID', 'FUNC_VALUE', 'MARKER', 'SYNC_SIGNAL']
-write = sys.stdout.write
 eEvent      = libEDK.EE_EmoEngineEventCreate()
 eState      = libEDK.EE_EmoStateCreate()
 userID            = c_uint(0)
@@ -82,7 +86,7 @@ print ">> "
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 option = int(raw_input())
 
-
+#check if emtoiv system is working properly
 if option == 1:
     print libEDK.EE_EngineConnect("Emotiv Systems-5")
     if libEDK.EE_EngineConnect("Emotiv Systems-5") != 0:
@@ -100,10 +104,13 @@ hData = libEDK.EE_DataCreate()
 libEDK.EE_DataSetBufferSizeInSec(secs)
 print "Buffer size in secs:"
 array = [5129.230769,5808.205128,7804.102564,5249.74359,3983.589744,6991.794872,1689.230769,6770.25641,5193.333333,4081.538462,2437.948718,7184.615385,130.7692308,6263.589744,6666.3245]
+#random channel chooses channel based off array
 def randomDimension(number,shape):
+    #get random numbers
     randomNumber = random.randrange(2,15)
     randomNumber1 = random.randrange(2,15)
     randomNumber2 = random.randrange(2,15)
+    #based on random number then chooose random channels
     if(number == 1):
         shape.size = (array[randomNumber],array[randomNumber1],array[randomNumber2])
     elif number == 2:
@@ -120,22 +127,25 @@ def randomDimension(number,shape):
         shape.radius = array[randomNumber]
         shape.thickness = array[randomNumber1]
     elif number == 8:
-        #if randomNumber > 6000:
-  #          radomNumber = 6000;
         shape.radius = array[randomNumber]
-    return shape     
+    return shape
+#chooses random color
 def randomColor(shape):
+    #get random color Vpython ranges its color from 0 to 1
     randomNumber1 = random.randrange(0,2)
     randomNumber2 = random.randrange(0,2)
     randomNumber3 = random.randrange(0,2)
+    #if black choose force a different color
     if(randomNumber3==0 and randomNumber2==0 and randomNumber1==0):
-        #print shape.color
         randonNumber1=1
         randomNumber3=1
     shape.color= (randomNumber1,randomNumber2,randomNumber3)
     return shape
+#make a new shape
 def randomShape(shape):
-    randomNumber = random.randrange(1,9)   
+    #get random number
+    randomNumber = random.randrange(1,9)
+    #change shape based on the random number
     if randomNumber == 1:
         shape = box(pos = (0,0,0),axis = (0,0,1),color =(0,244,0),length =1,width =1, height =1)
     elif randomNumber == 2:
@@ -153,10 +163,9 @@ def randomShape(shape):
     elif randomNumber == 8:
         shape = sphere(pos=(0,0,0),color =(0,244,0), radius=0.5)
     return shape,randomNumber
-    
+#setup spheres on the screen
 ball = sphere(pos=(1,1,1), radius=0.1,make_trail=True, trail_type="points",
               interval=10, retain=50)
-#scene1=display(width=300,height=300)
 ball3 = sphere(pos=(1,1,1), radius=0.1,make_trail=True, trail_type="points",
               interval=10, retain=50)
 ball2 = sphere(pos=(0,0,0), radius=1)
@@ -175,15 +184,16 @@ y=1
 z=1
 number1 = 0
 while (1):
+    #begin getting event information this how emotiv gets information about the user
     state = libEDK.EE_EngineGetNextEvent(eEvent)
     if state == 0:
         eventType = libEDK.EE_EmoEngineEventGetType(eEvent)
         libEDK.EE_EmoEngineEventGetUserId(eEvent, user)
-        if eventType == 16: #libEDK.EE_Event_enum.EE_UserAdded:
+        if eventType == 16:
             print "User added"
             libEDK.EE_DataAcquisitionEnable(userID,True)
             readytocollect = True
-
+    #checks to make sure data is ready to collect
     if readytocollect==True:    
         libEDK.EE_DataUpdateHandle(0, hData)
         libEDK.EE_DataGetNumberOfSample(hData,nSamplesTaken)
@@ -192,21 +202,19 @@ while (1):
             nSam=nSamplesTaken[0]
             arr=(ctypes.c_double*nSamplesTaken[0])()
             ctypes.cast(arr, ctypes.POINTER(ctypes.c_double))
-            #libEDK.EE_DataGet(hData, 3,byref(arr), nSam)                         
-            #data = array('d')#zeros(nSamplesTaken[0],double)
+            #get information from emotiv epoc+ to get 
             for sampleIdx in range(nSamplesTaken[0]): 
                 for i in range(22): 
                     libEDK.EE_DataGet(hData,targetChannelList[i],byref(arr), nSam)
-                    #print arr[sampleIdx],",",
-                    if i<14:
+                    #set array to channels
+                    if i<15:
                         array[i]=arr[i]
-                #print '\n'
                 x=x+1
                 y=y+1
                 z=z+1
                 rate(20)
-                #ball.rotate(angle=pi/4, axis=axis, origin=pos)
                 ball.rotate(angle=120)
+                #balls length away from center object is based off of random channel
                 #***********Ball 1***********************************************
                 ball.pos= vector(sin(x)*number1,sin(x)*number1,cos(z)*number1) #pi*1/4
                 ball.radius = number1/7
@@ -234,48 +242,41 @@ while (1):
                 ball4 = randomColor(ball4)
                 ball4.trail_object.color = ball2.color
                 #***********Ball 6***********************************************
-                ball5.pos=vector(sin(x)*number1*1.2,cos(y)*number1*1.5,0)#increase .1
+                ball5.pos=vector(sin(x)*number1*1.5,cos(y)*number1*1.5,0)#increase by 1.5
                 ball5.radius = number1/7
                 ball5 = randomColor(ball5)
                 ball5.trail_object.color = ball2.color
                 #***********Ball 7***********************************************
-                ball10.pos=vector(sin(x)*number1*1.8,cos(y)*number1*1.8,0)#increase .2
+                ball10.pos=vector(sin(x)*number1*1.8,cos(y)*number1*1.8,0)#increase 1.8
                 ball10.radius = number1/7
                 ball10 = randomColor(ball10)
                 ball10.trail_object.color = ball2.color
                 #***********Ball 8***********************************************
-                ball6.pos=vector(sin(x)*number1*2.0,cos(y)*number1*2.0,0)#decrease .1
+                ball6.pos=vector(sin(x)*number1*2.0,cos(y)*number1*2.0,0)#increase 2.0
                 ball6.radius = number1/7
                 ball6 = randomColor(ball6)
                 ball6.trail_object.color = ball2.color
                 #***********Ball 9***********************************************
-                ball7.pos=vector(sin(x)*number1*2.2,cos(y)*number1*2.2,0)#decrease .2
+                ball7.pos=vector(sin(x)*number1*2.2,cos(y)*number1*2.2,0)#increase2.2
                 ball7.radius = number1/7
                 ball7 = randomColor(ball7)
                 ball7.trail_object.color = ball2.color
-                #/ball5.pos=vector((1.1)*sin(x),(1.1)*cos(y),0)
+                #change if mouse is clicked within window
                 if scene.mouse.clicked:
                     ball2.visible = false
                     ball2,number = randomShape(ball2)
                     number1 = array[number]
                     m = scene.mouse.getclick()
                     loc = m.pos
-                    print(loc)
                 ball2 = randomColor(ball2)
                 ball2 = randomDimension(number,ball2)
-            
-                #other.setarray(arr)
-    
+    #sleep thread
     time.sleep(0.2)
-
-    #rate(5)
 libEDK.EE_DataFree(hData)
-
+#disconnect emotive epoc+ from program
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------
 libEDK.EE_EngineDisconnect()
 libEDK.EE_EmoStateFree(eState)
 libEDK.EE_EmoEngineEventFree(eEvent)
-def statusA():
-    return arr
 
 
